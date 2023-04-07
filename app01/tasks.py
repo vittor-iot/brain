@@ -9,6 +9,9 @@ import csv
 import cv2
 import os
 import mediapipe as mp
+
+from tools.pymysql_pack import Connect
+
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
@@ -157,18 +160,21 @@ def pose_d(path,id):
     new_path = STATIC_IP +'static/'+ a
     new_csv = STATIC_IP + 'static/posecsv/'+name+'.csv'
 
-    db = get_db()
-    cursor = db.cursor()
-    sql = "update pose set after_url='"+new_path+"'where id = " + str(id)
-    sql1 = "update pose set csv_url='"+new_csv+"'where id = " + str(id)
-    cursor.execute(sql)
-    cursor.execute(sql1)
-    try:
-        db.commit()
-    except:
-        db.rollback()
-    finally:
-        db.close()
+    # db = get_db()
+    # cursor = db.cursor()
+    # sql = "update pose set after_url='"+new_path+"'where id = " + str(id)
+    # sql1 = "update pose set csv_url='"+new_csv+"'where id = " + str(id)
+    # cursor.execute(sql)
+    # cursor.execute(sql1)
+    # try:
+    #     db.commit()
+    # except:
+    #     db.rollback()
+    # finally:
+    #     db.close()
+    con = Connect(host="localhost", user="brain", password="53510678", database="brain")
+    con.table_update('pose', {'after_url': new_path, 'csv_url': new_csv, 'assessStatus': 1}, 'id', id)
+    con.close()
 
     
     os.remove(after_path)
