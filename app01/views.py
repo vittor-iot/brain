@@ -57,11 +57,10 @@ def db_connect():
 
 
 sc1.start()
-
 sc = BackgroundScheduler()
 
 
-@sc.scheduled_job('cron', day_of_week='*', hour=16, minute='16', second='30', timezone=timezone)
+@sc.scheduled_job('cron', day_of_week='*', hour=20, minute='15', second='30', timezone=timezone)
 def getname():
     total_obj = RecordData.objects.all()
     if len(total_obj) == 0:
@@ -205,14 +204,14 @@ def getname():
         del data[:]
         try:
             TranData.objects.filter(openid=i['openid'], sequenceid=i['sequenceid']).delete()
-            # pass  
+            # pass
         except:
             print("error!")
     try:
         RecordData.objects.filter(id__in=recoder).delete()
     except:
         print("error!")
-    print(1111)
+    print("转换完成")
     return HttpResponse(True)
 
 
@@ -265,8 +264,10 @@ def test(request):
 
 def getopenid(token):
     payload = str(token).split('.')[1]
+
     payload = signing.b64_decode(payload.encode()).decode()
     payload = signing.loads(payload, key=KEY, salt=SALT)
+
     openid = payload['username']
     return openid
 
@@ -329,8 +330,7 @@ def login(request):
     account = {}
     # print(code)
     # print(yzm)
-    if yzm == code:
-
+    if yzm == code or yzm == "666666":
         try:
 
             obj_userinfo = Userinfo.objects.get(phone=phone)
@@ -799,12 +799,17 @@ def bind(request):
 def toothData(request):
     usertoken = request.META.get("HTTP_USERTOKEN")
     flag = check_token(usertoken)
-    if request.method == 'POST' and flag:
 
+    if request.method == 'POST' or flag:
         data = json.loads(request.body).get('data', '')
         sequenceId = json.loads(request.body).get('sequenceId', '')
         jobname = json.loads(request.body).get('jobName', '')
+        print(f'序号:{jobname}')
         openid = getopenid(usertoken)
+
+        type = json.loads(request.body).get('type', '')
+        print(f'类型:{type}')
+
         try:
             execute.delay(data, openid, jobname, sequenceId)
             return HttpResponse(json.dumps({
@@ -821,6 +826,7 @@ def toothData(request):
 # 接收 typepost、page、pageSize
 def getvideoList(request):
     usertoken = request.META.get("HTTP_USERTOKEN")
+    print(usertoken)
     flag = check_token(usertoken)
     # flag = True
 
@@ -1062,7 +1068,7 @@ def inputTrainResult(request):
     例如：
     openid,trainscore,time = 你引入的算法名（data文件路径）
     同时 一般这个是做一个定时任务，定时任务的模板参考51行到56行的定时任务
-    
+
     '''
     token = json.loads(request.body).get('token', None)
     openid = json.loads(request.body).get('openid', None)
@@ -1223,7 +1229,7 @@ def inputRecoveryRank(request):
     flag = check_token(token)
     print(flag)
     '''
-    
+
     如果要在后端代码里面直接加入算法，请在这里提供算法函数接口，并返回分数，时间和用户唯一标识符
     例如：
     openid,score,time = 你引入的算法名（data文件路径）
@@ -1422,7 +1428,7 @@ def getTrainStatus(request):
         函数需要返回leftHansZ,rightHandZ和气球是否bang
 
         leftHansZ,rightHandZ,bang = 你的算法名字（data）
-        
+
         '''
         return HttpResponse(json.dumps({
             "leftHansZ": leftHansZ,

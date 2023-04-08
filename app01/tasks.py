@@ -266,7 +266,7 @@ def get_score_by_video_path(path):
         if ret is False:
             print("步态评估总分数：{:.0f}".format(pose_score_total / pose_frame_total * 1000))
             # 释放资源
-            res_pose_score = pose_score_total / pose_frame_total * 1000
+            res_pose_score = int(pose_score_total / pose_frame_total * 1000)
             break
 
         # 获取每一帧的步态评估分数
