@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "channels",
     'app01',
     'celery_task',
     "corsheaders",
@@ -71,6 +72,7 @@ TEMPLATES = [
     },
 ]
 
+# WSGI_APPLICATION = 'brain.wsgi.application'
 ASGI_APPLICATION = 'brain.asgi.application'
 
 # Database
@@ -84,8 +86,8 @@ DATABASES = {
         # 'HOST': '47.98.219.100',
         'HOST': 'localhost',
         'PORT': 3306,
-        'USER': 'brain',
-        'PASSWORD': '53510678',
+        'USER': 'root',
+        'PASSWORD': '123456',
         'OPTIONS':{'charset':'utf8mb4'},
     }
 }

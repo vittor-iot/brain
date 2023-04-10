@@ -1,3 +1,6 @@
+import logging
+
+import dill
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http.response import JsonResponse
@@ -28,6 +31,8 @@ import pytz
 import requests
 
 from apscheduler.schedulers.background import BackgroundScheduler
+
+from brain.test_settings import WEBSOCKET_CLIENTS
 
 timezone = pytz.timezone("Asia/Shanghai")
 inputTrainOpenid = 'this-is-brain-train-data-input-please-make-it'
@@ -796,6 +801,37 @@ def bind(request):
         }, cls=DecimalEncoder))
 
 
+def qr_bind(request):
+    # app识别二维码信息，进行其他设备登录授权
+    body = json.loads(request.body)
+    uid = body.get('qrContent', None)
+    phone = body.get('phoneNum', "")
+
+    # 根据uid获取用户信息
+    client = WEBSOCKET_CLIENTS.get(uid, None)
+    # 定义返回数据信息
+    data = {
+        "status": 200,
+        "message": "OK",
+    }
+    if client:
+        # 二维码未过期，获取到client对象，进行phone判断
+        try:
+            obj_userinfo = Userinfo.objects.get(phone=phone)
+            if obj_userinfo.disable == 0:
+                data["message"] = "该账号已被禁用"
+                data["status"] = 400
+            else:
+                data["qrContent"] = "OK"
+        except Exception as e:
+            data["message"] = "该账号不存在"
+    else:
+        # 二维码已过期，没有获取到client对象
+        data["message"] = "二维码已过期"
+        data["status"] = 400
+    return HttpResponse(json.dumps(data, cls=DecimalEncoder))
+
+
 def toothData(request):
     usertoken = request.META.get("HTTP_USERTOKEN")
     flag = check_token(usertoken)
@@ -1097,6 +1133,16 @@ def inputTrainResult(request):
             "status": 1,
         }, cls=DecimalEncoder))
 
+def inputGameScore(request):
+    phone_num = json.loads(request.body).get('phonenum', None)
+    time = json.loads(request.body).get('time', None)
+    score = json.loads(request.body).get('gamescore', None)
+    print(phone_num, time, score)
+    # 将分数存入数据库
+    return HttpResponse(json.dumps({
+        "status": 200,
+        "gamescore": 'OK'
+    }, cls=DecimalEncoder))
 
 def getGaitRank(request):
     usertoken = request.META.get("HTTP_USERTOKEN")

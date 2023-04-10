@@ -1,6 +1,8 @@
 from django.contrib import admin
-from django.urls import path
-import app01.views as views 
+from django.urls import path, re_path
+from channels.routing import URLRouter
+import app01.views as views
+from app01 import consumers
 
 urlpatterns = [
     path('test', views.test),
@@ -14,9 +16,12 @@ urlpatterns = [
     path('user/token/login', views.token_login),                #登录（token）
     path('user/we_chat/login', views.wechat_login),             #登录（微信）
     path('user/bind', views.bind),                              #绑定手机号
+    path('user/QRbind', views.qr_bind),  # 绑定二维码于扫码的手机号
+
     path("user/comment", views.comment),                        #写入评论
     path('submit/toothData', views.toothData),                  #数据传输
     path('train/getTrainResult', views.getTrainResult),         #得到训练结果
+    path('train/inputGameScore', views.inputGameScore),  # 传入游戏得分
     path('train/historyTrainData', views.histroyTrainData),         #查看历史训练结果
     path('train/inputTrainResult', views.inputTrainResult),     #输入训练结果(对外提供接口，需要token验证，算法)
     path('recovery/getRecoveryRank', views.getRecoveryRank),    #得到康复结果排名
@@ -35,5 +40,9 @@ urlpatterns = [
     
 
     path("gait/getReport", views.getReport),                    #获取报告
+]
 
+websocket_urlpatterns = [
+    # 所有websocket以ws/开始是约定俗成的
+    re_path(r'login/$', consumers.LoginConsumer.as_asgi()),
 ]

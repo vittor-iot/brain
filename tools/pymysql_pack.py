@@ -2,10 +2,15 @@
 Lightweight encapsulation of pymysql.
 对pymysql的轻量级封装
 """
+import contextlib
+import pickle
+
 import pymysql
 import logging
 import traceback
 import time
+
+from django.core.cache import cache
 
 
 class Connect(object):
@@ -158,6 +163,16 @@ class Connect(object):
         sql = "UPDATE %s SET %s WHERE %s=%s" % (table_name, upsets_str, field_where, value_where)
         self.execute(sql, *values)
 
+
+def context_obj_seialize(key, context):
+    with contextlib.ExitStack() as stack:
+        context_dict = {}
+        for key, value in context.items():
+            context_dict[key] = stack.enter_context(contextlib.suppress(pickle.UnpicklingError))
+            context_dict[key] = value
+
+        # 存储可序列化字典对象到缓存中
+        cache.set(key, context_dict)
 
 if __name__ == '__main__':
     c = Connect(host='localhost',
