@@ -168,3 +168,7 @@ STATIC_ROOT = BASE_DIR +'/app01/static/'
 STATIC_IP = 'http://162.14.104.207:8000/'
 
 WEBSOCKET_CLIENTS = {}
+
+# django 3.2 之后需要设置
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+

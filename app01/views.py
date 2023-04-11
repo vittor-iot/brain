@@ -1,6 +1,9 @@
+import decimal
 import logging
+from functools import wraps
 
 import dill
+import redis
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http.response import JsonResponse
@@ -40,6 +43,22 @@ inputTrainOpenid = 'this-is-brain-train-data-input-please-make-it'
 HEADER = {'typ': 'JWP', 'alg': 'default'}
 KEY = 'LI_WEI_QUAN'
 SALT = 'www.yihcampus.com'
+
+
+def http_response(func):
+    """包装 Django 返回数据的装饰器"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        if isinstance(result, dict):
+            # 如果返回值是字符串，则使用 HttpResponse 将其转换为 HTTP 响应并返回
+            return HttpResponse(json.dumps(result, cls=DecimalEncoder, ensure_ascii=False))
+        elif isinstance(result, str):
+            return HttpResponse(result)
+        else:
+            # 如果返回值不是字符串，则直接返回
+            return result
+    return wrapper
 
 
 class DecimalEncoder(json.JSONEncoder):
@@ -801,6 +820,7 @@ def bind(request):
         }, cls=DecimalEncoder))
 
 
+@http_response
 def qr_bind(request):
     # app识别二维码信息，进行其他设备登录授权
     body = json.loads(request.body)
@@ -823,13 +843,18 @@ def qr_bind(request):
                 data["status"] = 400
             else:
                 data["qrContent"] = "OK"
+                # redis保存登录用户信息，24小时时限
+                r = redis.Redis(host='localhost', port=6379)
+                r.setex(phone, 24 * 60 * 60, obj_userinfo.openid)
         except Exception as e:
+            data['status'] = 400
             data["message"] = "该账号不存在"
     else:
         # 二维码已过期，没有获取到client对象
         data["message"] = "二维码已过期"
         data["status"] = 400
-    return HttpResponse(json.dumps(data, cls=DecimalEncoder))
+
+    return data
 
 
 def toothData(request):
@@ -1133,16 +1158,37 @@ def inputTrainResult(request):
             "status": 1,
         }, cls=DecimalEncoder))
 
+
+@http_response
 def inputGameScore(request):
     phone_num = json.loads(request.body).get('phonenum', None)
     time = json.loads(request.body).get('time', None)
     score = json.loads(request.body).get('gamescore', None)
+    # 定义返回数据
     print(phone_num, time, score)
+    # 判断用户状态
+    if not phone_num or not score or not time:
+        return {"status": 0, "msg": "参数缺失"}
+
+    # 判断登录状态
+    r = redis.Redis(host='localhost', port=6379)
+    status = r.get(phone_num)
+    print(status)
+    if not status:
+        return {"status": 401, "msg": "用户未登录"}
+
     # 将分数存入数据库
-    return HttpResponse(json.dumps({
-        "status": 200,
-        "gamescore": 'OK'
-    }, cls=DecimalEncoder))
+    try:
+        with transaction.atomic():
+            GameScore.objects.create(
+                phone=phone_num,
+                time=time,
+                score=score
+            )
+        return {"status": 200, "msg": "success"}
+    except Exception as e:
+        print(e)
+        return {"status": 500, "msg": "failed"}
 
 def getGaitRank(request):
     usertoken = request.META.get("HTTP_USERTOKEN")

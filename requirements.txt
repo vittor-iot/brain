@@ -185,5 +185,5 @@ yapf==0.31.0
 zipp==3.6.0
 zope.interface==4.7.1
 django==3.2.9
-channels==3.0.4
+channels==4.0.0
 pywin32==225
