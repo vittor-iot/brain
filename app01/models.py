@@ -307,6 +307,12 @@ class Userinfo(models.Model):
         managed = False
         db_table = 'userinfo'
 
+    def get_nick_name(self):
+        wechat_user = AuthTable.objects.filter(openid=self.openid, type='wechat').first()
+        if wechat_user is None:
+            return self.name
+        return wechat_user.nickname if wechat_user.nickname else self.name
+
 
 class GameScore(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -317,3 +323,9 @@ class GameScore(models.Model):
     class Meta:
         managed = False
         db_table = 'game_score'
+
+    def get_name(self):
+        obj = Userinfo.objects.filter(phone=self.phone).first()
+        if obj is None:
+            return ""
+        return obj.get_nick_name()

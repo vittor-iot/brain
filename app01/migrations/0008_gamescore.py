@@ -27,9 +27,27 @@ class Migration(migrations.Migration):
 
 """
 CREATE TABLE game_score (
-    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
     phone varchar(255),
     score integer,
     time varchar(255)
 );
+
+INSERT INTO game_score (phone, score, time) VALUES ('12345678911', 90, '2022-04-11');
+INSERT INTO game_score (phone, score, time) VALUES ('12345678911', 100, '2022-04-11');
+INSERT INTO game_score (phone, score, time) VALUES ('12345671234', 90, '2022-04-11');
+INSERT INTO game_score (phone, score, time) VALUES ('12345671234', 100, '2022-04-10');
+INSERT INTO game_score (phone, score, time) VALUES ('12345671234', 90, '2022-04-11');
+INSERT INTO game_score (phone, score, time) VALUES ('12345673234', 123, '2022-04-11 20:00:00');
+INSERT INTO game_score (phone, score, time) VALUES ('12345623455', 90, '2022-04-11');
+INSERT INTO game_score (phone, score, time) VALUES ('12342342357', 90, '2022-04-12');
+INSERT INTO game_score (phone, score, time) VALUES ('12342424567', 90, '2022-04-14');
+INSERT INTO game_score (phone, score, time) VALUES ('12425234567', 90, '2022-04-11');
+INSERT INTO game_score (phone, score, time) VALUES ('12453234567', 123, '2022-04-11 23:11:23');
+INSERT INTO game_score (phone, score, time) VALUES ('12453234567', 134, '2022-04-11');
+INSERT INTO game_score (phone, score, time) VALUES ('12453234567', 90, '2022-04-11');
+INSERT INTO game_score (phone, score, time) VALUES ('12345454567', 90, '2022-04-11');
+INSERT INTO game_score (phone, score, time) VALUES ('12345678967', 90, '2022-04-11');
+INSERT INTO game_score (phone, score, time) VALUES ('12345775667', 90, '2022-04-11');
+
 """

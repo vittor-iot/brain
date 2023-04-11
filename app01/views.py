@@ -1214,10 +1214,15 @@ def get_game_score(request):
         # 获取当前手机号的最高分记录
         cur_game_score = GameScore.objects.filter(phone=phone_num).order_by('-score', '-time').first()
 
+        # 如果当前手机号没有记录，则设置默认值
+        if cur_game_score is None:
+            cur_score, cur_time = -1, "2023-04-11 23:50:00"
+        else:
+            cur_score, cur_time = cur_game_score.score, cur_game_score.time
         # 获取高于目标手机号码最高分的记录数量，分数相同比较时间。
         rank = (
             GameScore.objects
-            .filter(Q(score__gt=cur_game_score.score) | Q(score=cur_game_score.score, time__gt=cur_game_score.time))
+            .filter(Q(score__gt=cur_score) | Q(score=cur_score, time__lt=cur_time))
             .values('phone')
             .annotate(max_score=Max('score'))
             .order_by('-max_score')
@@ -1225,14 +1230,12 @@ def get_game_score(request):
         )
 
         # 获取每一个phone的最高分，根据最高分排序，取前10个
-        top_scores = GameScore.objects.values('phone').annotate(max_score=Max('score')).order_by('-max_score')[:10]
+        top_scores = GameScore.objects.values('phone').annotate(max_score=Max('score')).order_by('-max_score', 'time')[:10]
         # 根据最高分获取对应的phone、score、time
         for score in top_scores:
-            phone = score['phone']
-            max_score = score['max_score']
-            game_score = GameScore.objects.filter(phone=phone, score=max_score).order_by('-time').first()
-            # 将phone、score、time存入rank_list
+            game_score = GameScore.objects.filter(phone=score['phone'], score=score['max_score']).order_by('-time').first()
             rank_list.append({
+                "name": game_score.get_name(),
                 "phone": game_score.phone,
                 "score": game_score.score,
                 "time": game_score.time,
@@ -1243,9 +1246,10 @@ def get_game_score(request):
             "status": 200,
             "msg": "success",
             "data": {
-                "score": cur_game_score.score,
-                "time": cur_game_score.time,
-                "phone": cur_game_score.phone,
+                "name": cur_game_score.get_name(),
+                "score": cur_score,  # cur_score < 0 表示没有记录
+                "time": cur_time,
+                "phone": phone_num,
                 "rank": rank,
                 "rankList": rank_list,
             }
