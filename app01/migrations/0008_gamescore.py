@@ -24,3 +24,12 @@ class Migration(migrations.Migration):
             },
         ),
     ]
+
+"""
+CREATE TABLE game_score (
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    phone varchar(255),
+    score integer,
+    time varchar(255)
+);
+"""

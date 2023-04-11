@@ -4,6 +4,7 @@ from functools import wraps
 
 import dill
 import redis
+from django.db.models import Max, F, Q, Subquery, OuterRef
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http.response import JsonResponse
@@ -47,6 +48,7 @@ SALT = 'www.yihcampus.com'
 
 def http_response(func):
     """包装 Django 返回数据的装饰器"""
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
@@ -58,6 +60,7 @@ def http_response(func):
         else:
             # 如果返回值不是字符串，则直接返回
             return result
+
     return wrapper
 
 
@@ -1160,7 +1163,7 @@ def inputTrainResult(request):
 
 
 @http_response
-def inputGameScore(request):
+def input_game_score(request):
     phone_num = json.loads(request.body).get('phonenum', None)
     time = json.loads(request.body).get('time', None)
     score = json.loads(request.body).get('gamescore', None)
@@ -1190,18 +1193,83 @@ def inputGameScore(request):
         print(e)
         return {"status": 500, "msg": "failed"}
 
-def getGaitRank(request):
+
+@http_response
+def get_game_score(request):
+    phone_num = json.loads(request.body).get('phoneNum', None)
+    if not phone_num:
+        return {"status": 0, "msg": "参数缺失"}
+
+    # 判断登录状态
+    r = redis.Redis(host='localhost', port=6379)
+    status = r.get(phone_num)
+    print(status)
+    status = True
+    if not status:
+        return {"status": 401, "msg": "用户未登录"}
+
+    # 获取最高分
+    rank_list = []
+    try:
+        # 获取当前手机号的最高分记录
+        cur_game_score = GameScore.objects.filter(phone=phone_num).order_by('-score', '-time').first()
+
+        # 获取高于目标手机号码最高分的记录数量，分数相同比较时间。
+        rank = (
+            GameScore.objects
+            .filter(Q(score__gt=cur_game_score.score) | Q(score=cur_game_score.score, time__gt=cur_game_score.time))
+            .values('phone')
+            .annotate(max_score=Max('score'))
+            .order_by('-max_score')
+            .count() + 1
+        )
+
+        # 获取每一个phone的最高分，根据最高分排序，取前10个
+        top_scores = GameScore.objects.values('phone').annotate(max_score=Max('score')).order_by('-max_score')[:10]
+        # 根据最高分获取对应的phone、score、time
+        for score in top_scores:
+            phone = score['phone']
+            max_score = score['max_score']
+            game_score = GameScore.objects.filter(phone=phone, score=max_score).order_by('-time').first()
+            # 将phone、score、time存入rank_list
+            rank_list.append({
+                "phone": game_score.phone,
+                "score": game_score.score,
+                "time": game_score.time,
+            })
+
+        # 获取当前用户的排名和前10名
+        return {
+            "status": 200,
+            "msg": "success",
+            "data": {
+                "score": cur_game_score.score,
+                "time": cur_game_score.time,
+                "phone": cur_game_score.phone,
+                "rank": rank,
+                "rankList": rank_list,
+            }
+        }
+    except Exception as e:
+        logging.error(e)
+        return {"status": 500, "msg": "failed"}
+
+
+def get_gait_rank(request):
     usertoken = request.META.get("HTTP_USERTOKEN")
-    flag = check_token(usertoken)
-    print('-------------------------------------')
-    if request.method == 'POST' and flag:
+    status = check_token(usertoken)
+    print(status)
+    status = True
+    if request.method == 'POST' and status:
         try:
+            # 获取openid
             openid = json.loads(request.body).get('openid', None)
             # all_num = RecoveryRank.objects.all().count()
             # print(openid)
             obj = Pose.objects.filter(user_openid=openid, assessstatus=1).order_by('-time').first()
             # print(obj)
             lte_num = Pose.objects.filter(assessstatus=1).values('user_openid').distinct()
+
             # print(lte_num)
             # print(lte_num[0])
 
@@ -1235,14 +1303,12 @@ def getGaitRank(request):
                 if i.user_openid == openid:
                     rank = h
 
-            # print(data)
             return HttpResponse(json.dumps({
                 "status": 200,
                 'rank': rank,
                 "rankList": data,
-
             }, cls=DecimalEncoder))
-        except:
+        except Exception as e:
             return HttpResponse(json.dumps({
                 "status": 1,
             }, cls=DecimalEncoder))
@@ -1252,7 +1318,7 @@ def getGaitRank(request):
         }, cls=DecimalEncoder))
 
 
-def getRecoveryRank(request):
+def get_recovery_rank(request):
     usertoken = request.META.get("HTTP_USERTOKEN")
     flag = check_token(usertoken)
     if request.method == 'POST' and flag:
@@ -1295,7 +1361,6 @@ def getRecoveryRank(request):
                 "status": 200,
                 'rank': rank,
                 "rankList": data,
-
             }, cls=DecimalEncoder))
         except:
             print(1)
@@ -1321,7 +1386,6 @@ def inputRecoveryRank(request):
     flag = check_token(token)
     print(flag)
     '''
-
     如果要在后端代码里面直接加入算法，请在这里提供算法函数接口，并返回分数，时间和用户唯一标识符
     例如：
     openid,score,time = 你引入的算法名（data文件路径）
