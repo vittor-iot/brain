@@ -10,6 +10,7 @@ from django.db.models import BigAutoField
 
 
 class Adminuser(models.Model):
+    id = models.BigAutoField(primary_key=True)
     admin_id = models.CharField(max_length=255, blank=True, null=True)
     phone = models.CharField(max_length=255, blank=True, null=True)
     password = models.CharField(max_length=255, blank=True, null=True)
@@ -21,6 +22,7 @@ class Adminuser(models.Model):
 
 
 class AuthGroup(models.Model):
+    id = models.BigAutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=150)
 
     class Meta:
@@ -29,6 +31,7 @@ class AuthGroup(models.Model):
 
 
 class AuthGroupPermissions(models.Model):
+    id = models.BigAutoField(primary_key=True)
     group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
     permission = models.ForeignKey('AuthPermission', models.DO_NOTHING)
 
@@ -39,6 +42,7 @@ class AuthGroupPermissions(models.Model):
 
 
 class AuthPermission(models.Model):
+    id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=255)
     content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING)
     codename = models.CharField(max_length=100)
@@ -50,6 +54,7 @@ class AuthPermission(models.Model):
 
 
 class AuthTable(models.Model):
+    id = models.BigAutoField(primary_key=True)
     accountid = models.CharField(max_length=255, blank=True, null=True)
     openid = models.CharField(max_length=255, blank=True, null=True)
     type = models.CharField(max_length=255, blank=True, null=True)
@@ -63,6 +68,7 @@ class AuthTable(models.Model):
 
 
 class AuthUser(models.Model):
+    id = models.BigAutoField(primary_key=True)
     password = models.CharField(max_length=128)
     last_login = models.DateTimeField(blank=True, null=True)
     is_superuser = models.IntegerField()
@@ -80,6 +86,7 @@ class AuthUser(models.Model):
 
 
 class AuthUserGroups(models.Model):
+    id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(AuthUser, models.DO_NOTHING)
     group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
 
@@ -90,6 +97,7 @@ class AuthUserGroups(models.Model):
 
 
 class AuthUserUserPermissions(models.Model):
+    id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(AuthUser, models.DO_NOTHING)
     permission = models.ForeignKey(AuthPermission, models.DO_NOTHING)
 
@@ -100,6 +108,7 @@ class AuthUserUserPermissions(models.Model):
 
 
 class Comments(models.Model):
+    id = models.BigAutoField(primary_key=True)
     videoid = models.CharField(max_length=255)
     userid = models.CharField(max_length=255)
     comment = models.CharField(max_length=255)
@@ -111,6 +120,7 @@ class Comments(models.Model):
 
 
 class DjangoAdminLog(models.Model):
+    id = models.BigAutoField(primary_key=True)
     action_time = models.DateTimeField()
     object_id = models.TextField(blank=True, null=True)
     object_repr = models.CharField(max_length=200)
@@ -125,6 +135,7 @@ class DjangoAdminLog(models.Model):
 
 
 class DjangoContentType(models.Model):
+    id = models.BigAutoField(primary_key=True)
     app_label = models.CharField(max_length=100)
     model = models.CharField(max_length=100)
 
@@ -135,6 +146,7 @@ class DjangoContentType(models.Model):
 
 
 class DjangoMigrations(models.Model):
+    id = models.BigAutoField(primary_key=True)
     app = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     applied = models.DateTimeField()
@@ -155,6 +167,7 @@ class DjangoSession(models.Model):
 
 
 class FileStorage(models.Model):
+    id = models.BigAutoField(primary_key=True)
     openid = models.CharField(max_length=255, blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
 
@@ -164,12 +177,14 @@ class FileStorage(models.Model):
 
 
 class Healthinfo(models.Model):
+    id = models.BigAutoField(primary_key=True)
     openid = models.CharField(max_length=255, blank=True, null=True)
     birthyear = models.CharField(max_length=255, blank=True, null=True)
     illtime = models.CharField(max_length=255, blank=True, null=True)
     height = models.FloatField(blank=True, null=True)
     weight = models.FloatField(blank=True, null=True)
-    surgerytime = models.CharField(db_column='surgeryTime', max_length=255, blank=True, null=True)  # Field name made lowercase.
+    surgerytime = models.CharField(db_column='surgeryTime', max_length=255, blank=True,
+                                   null=True)  # Field name made lowercase.
     degree = models.CharField(max_length=255, blank=True, null=True)
     illtype = models.CharField(max_length=255, blank=True, null=True)
 
@@ -179,6 +194,7 @@ class Healthinfo(models.Model):
 
 
 class LookVideo(models.Model):
+    id = models.BigAutoField(primary_key=True)
     url = models.CharField(max_length=255)
     videotype = models.IntegerField(blank=True, null=True)
     status = models.IntegerField(blank=True, null=True)
@@ -191,6 +207,7 @@ class LookVideo(models.Model):
 
 
 class Pose(models.Model):
+    id = models.BigAutoField(primary_key=True)
     after_url = models.CharField(max_length=255, blank=True, null=True)
     before_url = models.CharField(max_length=255)
     user_openid = models.CharField(max_length=255)
@@ -206,10 +223,18 @@ class Pose(models.Model):
         managed = False
         db_table = 'pose'
 
+    def get_name(self):
+        obj = Userinfo.objects.filter(openid=self.user_openid).first()
+        if obj is None:
+            return ""
+        return obj.get_nick_name()
+
 
 class RecordData(models.Model):
+    id = models.BigAutoField(primary_key=True)
     openid = models.CharField(max_length=255, blank=True, null=True)
-    sequenceid = models.CharField(db_column='sequenceId', max_length=255, blank=True, null=True)  # Field name made lowercase.
+    sequenceid = models.CharField(db_column='sequenceId', max_length=255, blank=True,
+                                  null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -217,6 +242,7 @@ class RecordData(models.Model):
 
 
 class RecoveryRank(models.Model):
+    id = models.BigAutoField(primary_key=True)
     openid = models.CharField(max_length=255, blank=True, null=True)
     score = models.FloatField(blank=True, null=True)
     time = models.CharField(max_length=255, blank=True, null=True)
@@ -225,8 +251,15 @@ class RecoveryRank(models.Model):
         managed = False
         db_table = 'recovery_rank'
 
+    def get_name(self):
+        obj = Userinfo.objects.filter(openid=self.openid).first()
+        if obj is None:
+            return ""
+        return obj.get_nick_name()
+
 
 class Test(models.Model):
+    id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=10, db_collation='utf8_general_ci')
 
     class Meta:
@@ -235,6 +268,7 @@ class Test(models.Model):
 
 
 class TotalData(models.Model):
+    id = models.BigAutoField(primary_key=True)
     openid = models.CharField(max_length=255, blank=True, null=True)
     data = models.CharField(max_length=255, blank=True, null=True)
     time = models.CharField(max_length=255, blank=True, null=True)
@@ -245,6 +279,7 @@ class TotalData(models.Model):
 
 
 class TrainResult(models.Model):
+    id = models.BigAutoField(primary_key=True)
     openid = models.CharField(max_length=255, blank=True, null=True)
     trainscore = models.FloatField(blank=True, null=True)
     time = models.CharField(max_length=255, blank=True, null=True)
@@ -255,10 +290,12 @@ class TrainResult(models.Model):
 
 
 class TranData(models.Model):
+    id = models.BigAutoField(primary_key=True)
     openid = models.CharField(max_length=255, blank=True, null=True)
     data = models.TextField(blank=True, null=True)
     time = models.CharField(max_length=255, blank=True, null=True)
-    sequenceid = models.CharField(db_column='sequenceId', max_length=255, db_collation='armscii8_general_ci', blank=True, null=True)  # Field name made lowercase.
+    sequenceid = models.CharField(db_column='sequenceId', max_length=255, db_collation='armscii8_general_ci',
+                                  blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -266,6 +303,7 @@ class TranData(models.Model):
 
 
 class Userinfo(models.Model):
+    id = models.BigAutoField(primary_key=True)
     openid = models.CharField(max_length=255, blank=True, null=True)
     ipname = models.CharField(max_length=255, blank=True, null=True)
     gender = models.CharField(max_length=255, blank=True, null=True)
@@ -281,12 +319,25 @@ class Userinfo(models.Model):
         managed = False
         db_table = 'userinfo'
 
-#
-# class GameScore(models.Model):
-#     phone = models.CharField(max_length=255, blank=True, null=True)
-#     score = models.IntegerField(blank=True, null=True)
-#     time = models.CharField(max_length=255, blank=True, null=True)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'game_score'
+    def get_nick_name(self):
+        wechat_user = AuthTable.objects.filter(openid=self.openid, type='wechat').first()
+        if wechat_user is None:
+            return self.name
+        return wechat_user.nickname if wechat_user.nickname else self.name
+
+
+class GameScore(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    phone = models.CharField(max_length=255, blank=True, null=True)
+    score = models.IntegerField(blank=True, null=True)
+    time = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'game_score'
+
+    def get_name(self):
+        obj = Userinfo.objects.filter(phone=self.phone).first()
+        if obj is None:
+            return ""
+        return obj.get_nick_name()

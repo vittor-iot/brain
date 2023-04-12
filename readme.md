@@ -3,6 +3,7 @@
 ### 1. 安装Mysql、redis、虚拟换使用python3.8.12
 ## 二、安装依赖
 ### 1.pip freeze > requirements.txt
+    注：window下，再requirements.txt中添加一行：pywin32==225
 ### 2.pip install -r requirements.txt
 ## 三、修改brain文件
 ### 1.修改brain/test_settings.py中的数据库配置为本地数据库配置
@@ -29,10 +30,9 @@
 ### 3.重新部署
 #### 3.1 启动django框架
 ##### 进入项目目录 -> 激活django虚拟环境 -> 运行项目
-cd ~/jupyter/backend/brain; conda activate django; python manage.py runserver 0.0.0.0:8000
+cd ~/jupyter/backend/brain; conda activate brain; python manage.py runserver 0.0.0.0:8000
 #### 3.2 启动celery
 ##### 重新打开一个终端 -> 进入项目目录 -> 激活django虚拟环境 -> 运行celery
-cd ~/jupyter/backend/brain; conda activate django; celery -A celery_task worker -P eventlet --loglevel=INFO --concurrency=10
+cd ~/jupyter/backend/brain; conda activate brain; celery -A celery_task worker -P eventlet --loglevel=INFO --concurrency=10
 #### 3.3 启动前端程序 
 ##### 重新打开一个终端 -> 进入项目目录 -> 运行前端程序
-cd ~/jupyter/backend/liujiboy-env_web-EnvironmentalVisualization-dev; npm run serve
