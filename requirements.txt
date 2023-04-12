@@ -186,4 +186,3 @@ zipp==3.6.0
 zope.interface==4.7.1
 django==3.2.9
 channels==3.0.4
-pywin32==225

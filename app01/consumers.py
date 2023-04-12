@@ -12,6 +12,7 @@ from brain.test_settings import WEBSOCKET_CLIENTS
 class LoginConsumer(WebsocketConsumer):
     def connect(self):
         self.accept()
+        print(self)
         # 生成唯一标识符，绑定客户端
         uid = str(uuid.uuid1())
         # 进行uid和客户端的绑定

@@ -1,6 +1,4 @@
 import logging
-
-import dill
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http.response import JsonResponse
@@ -333,7 +331,7 @@ def login(request):
     code = cache.get(phone)
     healthy = {}
     account = {}
-    # print(code)
+    print('1111')
     # print(yzm)
     if yzm == code or yzm == "666666":
         try:
@@ -806,7 +804,6 @@ def qr_bind(request):
     body = json.loads(request.body)
     uid = body.get('qrContent', None)
     phone = body.get('phoneNum', "")
-
     # 根据uid获取用户信息
     client = WEBSOCKET_CLIENTS.get(uid, None)
     # 定义返回数据信息
