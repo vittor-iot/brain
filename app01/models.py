@@ -223,6 +223,12 @@ class Pose(models.Model):
         managed = False
         db_table = 'pose'
 
+    def get_name(self):
+        obj = Userinfo.objects.filter(openid=self.user_openid).first()
+        if obj is None:
+            return ""
+        return obj.get_nick_name()
+
 
 class RecordData(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -244,6 +250,12 @@ class RecoveryRank(models.Model):
     class Meta:
         managed = False
         db_table = 'recovery_rank'
+
+    def get_name(self):
+        obj = Userinfo.objects.filter(openid=self.openid).first()
+        if obj is None:
+            return ""
+        return obj.get_nick_name()
 
 
 class Test(models.Model):

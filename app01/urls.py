@@ -34,7 +34,7 @@ urlpatterns = [
     path("video/submitVideo", views.submitVideo),                 # 上传视频
 
     path('Gait/getGaitResult', views.getGaitResult),              # 得到步态训练结果
-    path('Gait/getGaitRank', views.get_gait_rank),                  # 得到步态训练排名
+    path('Gait/getGaitRank', views.get_gait_rank),                # 得到步态训练排名
     path("gait/getReport", views.getReport),                      # 获取报告
 ]
 

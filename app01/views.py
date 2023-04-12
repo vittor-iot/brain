@@ -1203,12 +1203,11 @@ def get_game_score(request):
     # 判断登录状态
     r = redis.Redis(host='localhost', port=6379)
     status = r.get(phone_num)
-    print(status)
-    status = True
+    r.close()
     if not status:
         return {"status": 401, "msg": "用户未登录"}
 
-    # 获取最高分
+    # 获取当前手机号的最高分记录
     rank_list = []
     try:
         # 获取当前手机号的最高分记录
@@ -1216,9 +1215,9 @@ def get_game_score(request):
 
         # 如果当前手机号没有记录，则设置默认值
         if cur_game_score is None:
-            cur_score, cur_time = -1, "2023-04-11 23:50:00"
+            cur_score, cur_time, cur_name = -1, "2023-04-11 23:50:00", ""
         else:
-            cur_score, cur_time = cur_game_score.score, cur_game_score.time
+            cur_score, cur_time, cur_name = cur_game_score.score, cur_game_score.time, cur_game_score.get_name()
         # 获取高于目标手机号码最高分的记录数量，分数相同比较时间。
         rank = (
             GameScore.objects
@@ -1230,7 +1229,7 @@ def get_game_score(request):
         )
 
         # 获取每一个phone的最高分，根据最高分排序，取前10个
-        top_scores = GameScore.objects.values('phone').annotate(max_score=Max('score')).order_by('-max_score', 'time')[:10]
+        top_scores = GameScore.objects.values('phone').annotate(max_score=Max('score')).order_by('-max_score')[:10]
         # 根据最高分获取对应的phone、score、time
         for score in top_scores:
             game_score = GameScore.objects.filter(phone=score['phone'], score=score['max_score']).order_by('-time').first()
@@ -1241,12 +1240,13 @@ def get_game_score(request):
                 "time": game_score.time,
             })
 
-        # 获取当前用户的排名和前10名
+        # 对rank_list进行排序
+        rank_list = sorted(rank_list, key=lambda x: (-x['score'], x['time']))
         return {
             "status": 200,
             "msg": "success",
             "data": {
-                "name": cur_game_score.get_name(),
+                "name": cur_name,
                 "score": cur_score,  # cur_score < 0 表示没有记录
                 "time": cur_time,
                 "phone": phone_num,
@@ -1259,122 +1259,112 @@ def get_game_score(request):
         return {"status": 500, "msg": "failed"}
 
 
+@http_response
 def get_gait_rank(request):
     usertoken = request.META.get("HTTP_USERTOKEN")
     status = check_token(usertoken)
-    print(status)
-    status = True
     if request.method == 'POST' and status:
         try:
             # 获取openid
             openid = json.loads(request.body).get('openid', None)
-            # all_num = RecoveryRank.objects.all().count()
-            # print(openid)
-            obj = Pose.objects.filter(user_openid=openid, assessstatus=1).order_by('-time').first()
-            # print(obj)
-            lte_num = Pose.objects.filter(assessstatus=1).values('user_openid').distinct()
 
-            # print(lte_num)
-            # print(lte_num[0])
+            # 最近前10条的评估记录
+            recent_poses = Pose.objects.filter(user_openid=openid, assessstatus=1).order_by('-time')[0:10]
 
-            test = []
-            # print(888888)
-            for i in lte_num:
-                # print(i['user_openid'])
-                # print(i.openid)
-                ob = Pose.objects.filter(user_openid=i['user_openid'], assessstatus=1).order_by('-time').first()
-                print(1)
-                if ob.score != None and ob.score != '':
-                    test.append(ob)
+            # 评估记录
+            pose_list = []
+            for pose in recent_poses:
+                pose_list.append({
+                    "score": pose.score,
+                    "time": pose.time,
+                })
 
-            def soo(elem):
-                return elem.score
-
-            test.sort(key=soo, reverse=True)
-            # print(121212)
-            print(test)
-            data = []
-            rank = 0
-            h = 0
-            for i in test:
-                # print(1212)
-                h = h + 1
-                print(i.user_openid)
-                dic = {}
-                dic['name'] = Userinfo.objects.get(openid=i.user_openid).ipname
-                dic['score'] = i.score
-                data.append(dic)
-                if i.user_openid == openid:
-                    rank = h
-
-            return HttpResponse(json.dumps({
+            return {
                 "status": 200,
-                'rank': rank,
-                "rankList": data,
-            }, cls=DecimalEncoder))
+                "data": {
+                    "poseList": pose_list,
+                },
+                "message": "ok",
+            }
         except Exception as e:
-            return HttpResponse(json.dumps({
-                "status": 1,
-            }, cls=DecimalEncoder))
+            logging.error(e)
+            return {
+                "status": 500,
+                "message": "获取评估记录失败"
+            }
     else:
-        return HttpResponse(json.dumps({
-            "status": 0,
-        }, cls=DecimalEncoder))
+        return{"status": 0, "message": "用户个人信息错误"}
 
 
+@http_response
 def get_recovery_rank(request):
     usertoken = request.META.get("HTTP_USERTOKEN")
-    flag = check_token(usertoken)
-    if request.method == 'POST' and flag:
+    status = check_token(usertoken)
+    rank_list = []
+    if request.method == 'POST' and status:
         try:
+            # 获取openid
             openid = json.loads(request.body).get('openid', None)
-            # all_num = RecoveryRank.objects.all().count()
-            # print(openid)
-            obj = RecoveryRank.objects.filter(openid=openid).order_by('-time').first()
-            # print(obj)
-            lte_num = RecoveryRank.objects.filter().values('openid').distinct()
-            # print(lte_num)
-            # print(lte_num[0])
-            test = []
-            for i in lte_num:
-                # print(i['openid'])
-                # print(i.openid)
-                ob = RecoveryRank.objects.filter(openid=i['openid']).order_by('-time').first()
-                test.append(ob)
 
-            def soo(elem):
-                return elem.score
+            # 获取当前用户的最高分评估记录
+            top_recovery = RecoveryRank.objects.filter(openid=openid).order_by('-time').first()
+            # 如果当前用户没有记录，则设置默认值
+            if top_recovery is None:
+                cur_score, cur_time = -1, "2023-04-11 23:50:00"
+            else:
+                cur_score, cur_time = top_recovery.score, top_recovery.time
+            # 获取高于当前用户最高分的记录数量，分数相同比较时间。
+            rank = (
+                    RecoveryRank.objects
+                    .filter(Q(score__gt=cur_score) | Q(score=cur_score, time__lt=cur_time))
+                    .values('openid')
+                    .annotate(max_score=Max('score'))
+                    .order_by('-max_score')
+                    .count() + 1
+            )
 
-            test.sort(key=soo, reverse=True)
+            # 最近一次的评估
+            recent_recovery = RecoveryRank.objects.filter(openid=openid).order_by('-time').first()
 
-            rank = 0
-            data = []
-            h = 0
-            for i in test:
-                # print(i)
-                h = h + 1
-                dic = {}
-                dic['name'] = Userinfo.objects.get(openid=i.openid).ipname
-                dic['score'] = i.score
-                data.append(dic)
-                # print(i.openid)
-                if i.openid == openid:
-                    rank = h
+            # 获取评估分数排名前10的用户信息
+            top_recoveries = (
+                RecoveryRank.objects.values('openid')
+                .annotate(max_score=Max('score'))
+                .order_by('-max_score')[:10]
+            )
 
-            return HttpResponse(json.dumps({
+            # 获取当前用户的排名
+            for recovery in top_recoveries:
+                cur_recovery = RecoveryRank.objects.filter(openid=recovery['openid'], score=recovery['max_score']).order_by(
+                    '-time').first()
+                rank_list.append({
+                    "name": cur_recovery.get_name(),
+                    "score": cur_recovery.score,
+                    "time": cur_recovery.time,
+                })
+
+            # score降序，time升序
+            rank_list = sorted(rank_list, key=lambda x: (-x['score'], x['time']))
+            return {
                 "status": 200,
                 'rank': rank,
-                "rankList": data,
-            }, cls=DecimalEncoder))
-        except:
-            print(1)
-            return HttpResponse(json.dumps({
-                "status": 1,
-            }, cls=DecimalEncoder))
+                "name": recent_recovery.get_name(),
+                "score": recent_recovery.score,
+                "time": recent_recovery.time,
+                "rankList": rank_list,
+                "message": "ok",
+            }
+        except Exception as e:
+            logging.error(e)
+            return {
+                "status": 500,
+                "message": "获取排名失败"
+            }
     else:
-        return HttpResponse(json.dumps({
+        return {
             "status": 0,
-        }, cls=DecimalEncoder))
+            "message": "用户个人信息错误"
+        }
 
 
 def inputRecoveryRank(request):
