@@ -829,6 +829,7 @@ def qr_bind(request):
     phone = body.get('phoneNum', "")
     # 根据uid获取用户信息
     client = WEBSOCKET_CLIENTS.get(uid, None)
+    logging.error(client)
     # 定义返回数据信息
     data = {
         "status": 200,
@@ -846,9 +847,13 @@ def qr_bind(request):
                 # redis保存登录用户信息，24小时时限
                 r = redis.Redis(host='localhost', port=6379)
                 r.setex(phone, 24 * 60 * 60, obj_userinfo.openid)
+            client.send_message(status=data["status"], data={"phoneNum": phone}, message=data["message"])
         except Exception as e:
             data['status'] = 400
             data["message"] = "该账号不存在"
+
+            # 调用client
+            client.send_message(status=data["status"], data={}, message=data["message"])
     else:
         # 二维码已过期，没有获取到client对象
         data["message"] = "二维码已过期"
@@ -1342,6 +1347,7 @@ def get_recovery_rank(request):
 
             # score降序，time升序
             rank_list = sorted(rank_list, key=lambda x: (-x['score'], x['time']))
+            print(rank_list)
             return {
                 "status": 200,
                 'rank': rank,
