@@ -829,7 +829,6 @@ def qr_bind(request):
     phone = body.get('phoneNum', "")
     # 根据uid获取用户信息
     client = WEBSOCKET_CLIENTS.get(uid, None)
-    logging.error(client)
     # 定义返回数据信息
     data = {
         "status": 200,
@@ -1172,7 +1171,7 @@ def input_game_score(request):
     # 定义返回数据
     print(phone_num, time, score)
     # 判断用户状态
-    if not phone_num or not score or not time:
+    if phone_num is None or score is None or time is None:
         return {"status": 0, "msg": "参数缺失"}
 
     # 判断登录状态
@@ -1213,7 +1212,7 @@ def get_game_score(request):
     rank_list = []
     try:
         # 获取当前手机号的最高分记录
-        cur_game_score = GameScore.objects.filter(phone=phone_num).order_by('-score', '-time').first()
+        cur_game_score = GameScore.objects.filter(phone=phone_num).order_by('-score').first()
 
         # 如果当前手机号没有记录，则设置默认值
         if cur_game_score is None:
@@ -1234,7 +1233,7 @@ def get_game_score(request):
         top_scores = GameScore.objects.values('phone').annotate(max_score=Max('score')).order_by('-max_score')[:10]
         # 根据最高分获取对应的phone、score、time
         for score in top_scores:
-            game_score = GameScore.objects.filter(phone=score['phone'], score=score['max_score']).order_by('-time').first()
+            game_score = GameScore.objects.filter(phone=score['phone'], score=score['max_score']).first()
             rank_list.append({
                 "name": game_score.get_name(),
                 "phone": game_score.phone,
@@ -1242,8 +1241,6 @@ def get_game_score(request):
                 "time": game_score.time,
             })
 
-        # 对rank_list进行排序
-        rank_list = sorted(rank_list, key=lambda x: (-x['score'], x['time']))
         return {
             "status": 200,
             "msg": "success",
@@ -1347,7 +1344,6 @@ def get_recovery_rank(request):
 
             # score降序，time升序
             rank_list = sorted(rank_list, key=lambda x: (-x['score'], x['time']))
-            print(rank_list)
             return {
                 "status": 200,
                 'rank': rank,
