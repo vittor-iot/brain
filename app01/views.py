@@ -1178,6 +1178,7 @@ def input_game_score(request):
     r = redis.Redis(host='localhost', port=6379)
     status = r.get(phone_num)
     print(status)
+    #没有绑定手机号的时候传入的手机号变量设定为1
     if not status and phone_num != "1":
         return {"status": 401, "msg": "用户未登录"}
 
