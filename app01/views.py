@@ -628,6 +628,7 @@ def wechat_login(request):
                     print(openid)
                     obj_userinfo = Userinfo.objects.get(openid=openid)
                     obj_healthinfo = Healthinfo.objects.get(openid=openid)
+                    
                     if obj_userinfo.disable == 0:
                         return HttpResponse(json.dumps({
                             "status": 4
@@ -846,6 +847,8 @@ def qr_bind(request):
                 # redis保存登录用户信息，24小时时限
                 r = redis.Redis(host='localhost', port=6379)
                 r.setex(phone, 24 * 60 * 60, obj_userinfo.openid)
+            # if obj_userinfo.openid != 'NULL':
+            #     phone = obj_userinfo.ipname
             client.send_message(status=data["status"], data={"phoneNum": phone}, message=data["message"])
         except Exception as e:
             data['status'] = 400
@@ -1277,6 +1280,7 @@ def get_gait_rank(request):
                 pose_list.append({
                     "score": pose.score,
                     "time": pose.time,
+                    "after_url": pose.after_url,
                 })
 
             return {

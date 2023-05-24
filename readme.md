@@ -36,3 +36,4 @@ cd ~/jupyter/backend/brain; conda activate brain; python manage.py runserver 0.0
 cd ~/jupyter/backend/brain; conda activate brain; celery -A celery_task worker -P eventlet --loglevel=INFO --concurrency=10
 #### 3.3 启动前端程序 
 ##### 重新打开一个终端 -> 进入项目目录 -> 运行前端程序
+cd ~/jupyter/backend/liujiboy-env_web-EnvironmentalVisualization-dev/; npm run serve

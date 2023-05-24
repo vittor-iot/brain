@@ -174,11 +174,11 @@ def pose_d(path, id):
     # finally:
     #     db.close()
     con = Connect(host="localhost", user="brain", password="53510678", database="brain")
-    con.table_update('pose', {'after_url': new_path, 'csv_url': new_csv, 'assessStatus': 1}, 'id', id)
+    con.table_update('pose', {'after_url': new_path, 'csv_url': new_csv, 'assessStatus': 0}, 'id', id)
     con.close()
 
     os.remove(after_path)
-    print(oo)
+    print('视频转换完成')
 
 
 # app查看Lookvideo中的视频
