@@ -40,3 +40,4 @@ cd ~/jupyter/backend/liujiboy-env_web-EnvironmentalVisualization-dev/; npm run s
 
 ###### 注意服务器推送github
 git push origin master
+test
