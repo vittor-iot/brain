@@ -37,3 +37,6 @@ cd ~/jupyter/backend/brain; conda activate brain; celery -A celery_task worker -
 #### 3.3 启动前端程序 
 ##### 重新打开一个终端 -> 进入项目目录 -> 运行前端程序
 cd ~/jupyter/backend/liujiboy-env_web-EnvironmentalVisualization-dev/; npm run serve
+
+###### 注意服务器推送github
+git push origin master
