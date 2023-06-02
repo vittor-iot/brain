@@ -2,4 +2,5 @@ __pycache__
 app01/__pycache__
 app01/static/lookvideo
 app01/static/posecsv
-myadmin/__pycache__
+myadmin/__pycache__/
+app01/static/posevideo/

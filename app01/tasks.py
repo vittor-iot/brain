@@ -87,7 +87,7 @@ def execute(data, openid, jobname, sequenceId):
 
 @shared_task
 def pose_d(path, id):
-    print('begin')
+    print('begin-1')
     cap = cv2.VideoCapture(path)
     fourcc = cv2.VideoWriter_fourcc(*'XVID')  # 视频编解码器
     fps = cap.get(cv2.CAP_PROP_FPS)  # 帧数
@@ -157,8 +157,9 @@ def pose_d(path, id):
     out.release()
     cv2.destroyAllWindows()
     oo = avi_to_web_mp4(after_path)
-    a = oo.split(STATIC_ROOT)[1]
-    new_path = STATIC_IP + 'static/' + a
+    cc = mp4_to_flv(oo)
+    b = cc.split(STATIC_ROOT)[1]
+    new_path = STATIC_IP + 'static/' + b
     new_csv = STATIC_IP + 'static/posecsv/' + name + '.csv'
 
     # db = get_db()
