@@ -1499,18 +1499,17 @@ def comment(request):
 def getReport(request):
     if request.method == 'POST':
         # 读取前端发送的参数
-        openid = json.loads(request.body).get('openid', '')
-        data = []
+        print("getreport1s")
+        url = json.loads(request.body).get('video_url', None)
+        # url = json.loads(request.body).get('video_url', None)
+        print(url)
+        
         try:
-            reports = Pose.objects.filter(user_openid=openid, assessstatus=1)
-            print(reports)
-            for report in reports:
-                rob = {'content': report.pose_report, 'url': report.doctor_app_url, 'reportId': report.id}
-                data.append(rob)
-
+            reports = Pose.objects.filter(after_url=url) 
+            print(reports.values()[0].get('pose_report'))
             response = dict()
             response['status'] = 200
-            response['data'] = data
+            response['data'] = reports.values()[0].get('pose_report')
             return JsonResponse(response)
         except:
             response = dict()
