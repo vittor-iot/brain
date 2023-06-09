@@ -404,7 +404,7 @@ def login(request):
                         ipname=phone,
                         phone=phone,
                         disable=1,
-                        avatar='http://162.14.104.207:8000/static/avatar/default.png'
+                        avatar='http://www.brainseek.cn:8000/static/avatar/default.png'
                     )
                     Healthinfo.objects.create(
                         openid=openid,

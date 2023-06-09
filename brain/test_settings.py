@@ -167,6 +167,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR +'/app01/static/'
 
-STATIC_IP = 'http://162.14.104.207:8000/'
+STATIC_IP = 'http://www.brainseek.cn:8000/'
 
 WEBSOCKET_CLIENTS = {}

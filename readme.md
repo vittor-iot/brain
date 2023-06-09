@@ -18,7 +18,7 @@
 
 # code-runserver
 ## 1.登录code-runserver
-### 网址：http://162.14.104.207:8889/login
+### 网址：http://www.brainseek.cn:8889/login
 ### 密码：138969031790.wjt
 ## 2.从github上拉取代码
 ### git pull origin master

@@ -211,7 +211,7 @@ def uploadVideo(request):
             # job = pose.delay("/home/ubuntu/jupyter/backend/brain/app01/static/lookvideo/" + videoName)
 
             # 将视频url和type写入数据库
-            url = "http://162.14.104.207:8000/static/lookvideo/" + videoName
+            url = "http://www.brainseek.cn:8000/static/lookvideo/" + videoName
             print(url)
             vob = LookVideo()
             vob.url = url
@@ -258,7 +258,7 @@ def uploadLogo(request):
             # job = pose.delay("/home/ubuntu/jupyter/backend/brain/app01/static/lookvideo/" + videoName)
 
             # 将logo的url写入数据库
-            logourl = "http://162.14.104.207:8000/static/lookvideologo/" + videoName
+            logourl = "http://www.brainseek.cn:8000/static/lookvideologo/" + videoName
             print(logourl)
             vob = LookVideo.objects.get(id=videoId)
             vob.logourl = logourl
@@ -464,7 +464,7 @@ def uploadReport(request):
             # job = pose.delay("/home/ubuntu/jupyter/backend/brain/app01/static/lookvideo/" + videoName)
 
             # 将视频url和type写入数据库
-            url = "http://162.14.104.207:8000/static/posevideo/" + videoName
+            url = "http://www.brainseek.cn:8000/static/posevideo/" + videoName
             print(url)
             report = Pose.objects.get(id=reportId)
             print(report)
