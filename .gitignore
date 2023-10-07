@@ -1,6 +1,10 @@
 __pycache__
-app01/__pycache__
+app01/__pycache__/
 app01/static/lookvideo
 app01/static/posecsv
 myadmin/__pycache__/
-app01/static/posevideo/
+app01/static/
+data/
+myadmin/__pycache__/
+brain/__pycache__/
+

@@ -6,7 +6,7 @@ urlpatterns = [
     path("queryVideoList", views.queryVideoList),           # 查询（康复等）视频列表
     path("deleteVideo", views.deleteVideo),                 # 删除（康复等）视频
     path("uploadVideo", views.uploadVideo),                 # 接收上传的（康复等）视频
-    path("uploadLogo", views.uploadLogo),                 # 接收上传的（康复等）视频
+    path("uploadLogo", views.uploadLogo),                   # 接收上传的（康复等）视频
     path("queryCommentList", views.queryCommentList),       # 查询评论列表
     path("deleteComment", views.deleteComment),             # 删除（康复等视频）评论
     path("queryReportList", views.queryReportList),         # 查询报告列表

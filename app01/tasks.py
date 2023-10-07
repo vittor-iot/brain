@@ -62,7 +62,7 @@ def test_hello():
 
 
 @shared_task
-def execute(data, openid, jobname, sequenceId):
+def execute(data, openid, jobname, sequenceId, type):
     db = get_db()
     cursor = db.cursor()
 
@@ -70,8 +70,8 @@ def execute(data, openid, jobname, sequenceId):
         obj = i['data']
         # print(obj)
         time = i['time']
-        sql = "insert into tran_data (openid,data,time,sequenceid) values ('" + openid + "','" + obj + "','" + str(
-            time) + "','" + sequenceId + "')"
+        sql = "insert into tran_data (openid,data,time,sequenceid,jobname,type) values ('" + openid + "','" + obj + "','" + str(
+            time) + "','" + sequenceId + "','" + jobname + "','" + type + "')"
         cursor.execute(sql)
     sql = "insert into record_data (openid,sequenceid) values ('" + openid + "','" + sequenceId + "')"
     cursor.execute(sql)

@@ -10,7 +10,8 @@ from qcloudsms_py import SmsSingleSender
 from qcloudsms_py.httpclient import HTTPError
 import uuid
 import json
-import sys, os
+import sys
+import os
 import random
 import time
 import re
@@ -85,7 +86,7 @@ sc1.start()
 sc = BackgroundScheduler()
 
 
-@sc.scheduled_job('cron', day_of_week='*', hour=20, minute='15', second='30', timezone=timezone)
+@sc.scheduled_job('cron', day_of_week='*', hour=11, minute='39', second='30', timezone=timezone)
 def getname():
     total_obj = RecordData.objects.all()
     if len(total_obj) == 0:
@@ -108,7 +109,9 @@ def getname():
     path = os.getcwd()
     for i in objs:
         data = []
-        total = TranData.objects.filter(openid=i['openid'], sequenceid=i['sequenceid']).order_by("time")
+        total = TranData.objects.filter(
+            openid=i['openid'], sequenceid=i['sequenceid']).order_by("time")
+        print(i['openid'])
         user = Userinfo.objects.get(openid=i['openid'])
 
         num = 0
@@ -124,6 +127,7 @@ def getname():
             ti = obj.time
         st1 = re.findall('a0.{62}c0', s)
         for st in st1:
+            # print(st)
             hj = []
             for j in range(0, 33):
                 hj.append(int((st[j * 2:j * 2 + 2]), 16))
@@ -137,7 +141,8 @@ def getname():
                 # h_path=path + '/data/'+i['openid']+'/'+h_time
                 h_path = path + '/data/' + user.phone
                 # true_path = path + '/data/'+i['openid']+'/'+h_time+'/'+user.phone+'_'+h_name+'.csv'
-                true_path = path + '/data/' + user.phone + '/' + user.phone + '_' + h_name + '.csv'
+                true_path = path + '/data/' + user.phone + \
+                    '/' + user.phone + '_' + h_name + '.csv'
                 if not os.path.exists(true_path):
                     if not os.path.exists(h_path):
                         os.makedirs(h_path)
@@ -155,7 +160,8 @@ def getname():
         # h_path=path + '/data/'+i['openid']+'/'+h_time
         h_path = path + '/data/' + user.phone
         # true_path = path + '/data/'+i['openid']+'/'+h_time+'/'+user.phone+'_'+h_name+'.csv'
-        true_path = path + '/data/' + user.phone + '/' + user.phone + '_' + h_name + '.csv'
+        true_path = path + '/data/' + user.phone + \
+            '/' + user.phone + '_' + h_name + '.csv'
         # true_path = path + '/data/'+i['openid']+'.csv'
         # print(true_path)
         # print(os.path.exists(true_path))
@@ -228,7 +234,8 @@ def getname():
         # print(df)
         del data[:]
         try:
-            TranData.objects.filter(openid=i['openid'], sequenceid=i['sequenceid']).delete()
+            TranData.objects.filter(
+                openid=i['openid'], sequenceid=i['sequenceid']).delete()
             # pass
         except:
             print("error!")
@@ -324,7 +331,8 @@ def getyzm(request):
 
         try:
             # result = ssender.send(sms_type, 86, phone_numbers[0], "5678", extend="", ext="")
-            result = ssender.send_with_param(86, phone_numbers, template_id, params, sign=sms_sign, extend="", ext="")
+            result = ssender.send_with_param(
+                86, phone_numbers, template_id, params, sign=sms_sign, extend="", ext="")
             cache.set(telephone, code, None)
         # 签名参数未提供或者为空时，会使用默认签名发送短信
         except HTTPError as e:
@@ -353,7 +361,7 @@ def login(request):
     code = cache.get(phone)
     healthy = {}
     account = {}
-    print('1111')
+    print('login_362')
     # print(yzm)
     if yzm == code or yzm == "666666":
         try:
@@ -378,8 +386,10 @@ def login(request):
                 'birthyear'] = obj_healthinfo.birthyear + '年' if obj_healthinfo.birthyear != '' and obj_healthinfo.birthyear != None else ''
             healthy[
                 'illtime'] = obj_healthinfo.illtime if obj_healthinfo.illtime != '' and obj_healthinfo.illtime != None else ''
-            healthy['height'] = str(obj_healthinfo.height) + 'cm' if obj_healthinfo.height != None else ''
-            healthy['weight'] = str(obj_healthinfo.weight) + 'kg' if obj_healthinfo.weight != None else ''
+            healthy['height'] = str(obj_healthinfo.height) + \
+                'cm' if obj_healthinfo.height != None else ''
+            healthy['weight'] = str(obj_healthinfo.weight) + \
+                'kg' if obj_healthinfo.weight != None else ''
             healthy[
                 'surgerytime'] = obj_healthinfo.surgerytime if obj_healthinfo.surgerytime != '' and obj_healthinfo.surgerytime != None else ''
             healthy[
@@ -453,8 +463,8 @@ def editHealthInfo(request):
         degree = json.loads(request.body).get('degree', '')
         illType = json.loads(request.body).get('illType', '')
         openid = getopenid(usertoken)
-        print(request.POST)
-        print(openid)
+        # print(request.POST)
+        # print(openid)
         try:
             try:
                 obj = Healthinfo.objects.get(openid=openid)
@@ -575,8 +585,10 @@ def token_login(request):
                 'birthyear'] = obj_healthinfo.birthyear + '年' if obj_healthinfo.birthyear != '' and obj_healthinfo.birthyear != None else ''
             healthy[
                 'illtime'] = obj_healthinfo.illtime if obj_healthinfo.illtime != '' and obj_healthinfo.illtime != None else ''
-            healthy['height'] = str(obj_healthinfo.height) + 'cm' if obj_healthinfo.height != None else ''
-            healthy['weight'] = str(obj_healthinfo.weight) + 'kg' if obj_healthinfo.weight != None else ''
+            healthy['height'] = str(obj_healthinfo.height) + \
+                'cm' if obj_healthinfo.height != None else ''
+            healthy['weight'] = str(obj_healthinfo.weight) + \
+                'kg' if obj_healthinfo.weight != None else ''
             healthy[
                 'surgerytime'] = obj_healthinfo.surgerytime if obj_healthinfo.surgerytime != '' and obj_healthinfo.surgerytime != None else ''
             healthy[
@@ -604,10 +616,12 @@ def wechat_login(request):
     healthy = {}
 
     access_url = 'https://api.weixin.qq.com/sns/auth'
-    access_para = {'access_token': authResult['access_token'], 'openid': authResult['openid']}
+    access_para = {
+        'access_token': authResult['access_token'], 'openid': authResult['openid']}
     access_res = requests.get(access_url, params=access_para)
     user_url = 'https://api.weixin.qq.com/sns/userinfo'
-    user_para = {'access_token': authResult['access_token'], 'openid': authResult['openid'], 'lang': 'zh_CN'}
+    user_para = {'access_token': authResult['access_token'],
+                 'openid': authResult['openid'], 'lang': 'zh_CN'}
     user_res = requests.get(user_url, params=user_para)
     print(access_res.text)
     print(json.loads(user_res.content))
@@ -615,7 +629,8 @@ def wechat_login(request):
     print("-----")
     if request.method == 'POST':
         try:
-            obj = AuthTable.objects.get(accountid=data['openid'], type='wechat')
+            obj = AuthTable.objects.get(
+                accountid=data['openid'], type='wechat')
             if obj.openid == None:
                 print(1)
                 return HttpResponse(json.dumps({
@@ -625,10 +640,10 @@ def wechat_login(request):
             else:
                 openid = obj.openid
                 try:
-                    print(openid)
+                    # print(openid)
                     obj_userinfo = Userinfo.objects.get(openid=openid)
                     obj_healthinfo = Healthinfo.objects.get(openid=openid)
-                    
+
                     if obj_userinfo.disable == 0:
                         return HttpResponse(json.dumps({
                             "status": 4
@@ -645,8 +660,10 @@ def wechat_login(request):
                         'birthyear'] = obj_healthinfo.birthyear + '年' if obj_healthinfo.birthyear != '' and obj_healthinfo.birthyear != None else ''
                     healthy[
                         'illtime'] = obj_healthinfo.illtime if obj_healthinfo.illtime != '' and obj_healthinfo.illtime != None else ''
-                    healthy['height'] = str(obj_healthinfo.height) + 'cm' if obj_healthinfo.height != None else ''
-                    healthy['weight'] = str(obj_healthinfo.weight) + 'kg' if obj_healthinfo.weight != None else ''
+                    healthy['height'] = str(
+                        obj_healthinfo.height) + 'cm' if obj_healthinfo.height != None else ''
+                    healthy['weight'] = str(
+                        obj_healthinfo.weight) + 'kg' if obj_healthinfo.weight != None else ''
                     healthy[
                         'surgerytime'] = obj_healthinfo.surgerytime if obj_healthinfo.surgerytime != '' and obj_healthinfo.surgerytime != None else ''
                     healthy[
@@ -748,8 +765,10 @@ def bind(request):
                     'birthyear'] = obj_healthinfo.birthyear + '年' if obj_healthinfo.birthyear != '' and obj_healthinfo.birthyear != None else ''
                 healthy[
                     'illtime'] = obj_healthinfo.illtime if obj_healthinfo.illtime != '' and obj_healthinfo.illtime != None else ''
-                healthy['height'] = str(obj_healthinfo.height) + 'cm' if obj_healthinfo.height != None else ''
-                healthy['weight'] = str(obj_healthinfo.weight) + 'kg' if obj_healthinfo.weight != None else ''
+                healthy['height'] = str(
+                    obj_healthinfo.height) + 'cm' if obj_healthinfo.height != None else ''
+                healthy['weight'] = str(
+                    obj_healthinfo.weight) + 'kg' if obj_healthinfo.weight != None else ''
                 healthy[
                     'surgerytime'] = obj_healthinfo.surgerytime if obj_healthinfo.surgerytime != '' and obj_healthinfo.surgerytime != None else ''
                 healthy[
@@ -849,13 +868,15 @@ def qr_bind(request):
                 r.setex(phone, 24 * 60 * 60, obj_userinfo.openid)
             # if obj_userinfo.openid != 'NULL':
             #     phone = obj_userinfo.ipname
-            client.send_message(status=data["status"], data={"phoneNum": phone}, message=data["message"])
+            client.send_message(status=data["status"], data={
+                                "phoneNum": phone,"openid":obj_userinfo.openid}, message=data["message"])
         except Exception as e:
             data['status'] = 400
             data["message"] = "该账号不存在"
 
             # 调用client
-            client.send_message(status=data["status"], data={}, message=data["message"])
+            client.send_message(
+                status=data["status"], data={}, message=data["message"])
     else:
         # 二维码已过期，没有获取到client对象
         data["message"] = "二维码已过期"
@@ -866,20 +887,28 @@ def qr_bind(request):
 
 def toothData(request):
     usertoken = request.META.get("HTTP_USERTOKEN")
-    flag = check_token(usertoken)
+    print('toothData')
+    
 
     if request.method == 'POST' or flag:
-        data = json.loads(request.body).get('data', '')
+        print(894)
         sequenceId = json.loads(request.body).get('sequenceId', '')
-        jobname = json.loads(request.body).get('jobName', '')
+        print(892)
+        data =       json.loads(request.body).get('data', '')
+        
+        # print(request.body)
+        jobname_type = json.loads(request.body).get('jobName', '')
+        temp_char = jobname_type.split(":")
+        jobname_temp = temp_char[0].split(" ")
+        jobname = jobname_temp[0]
+        type    = temp_char[1]
         print(f'序号:{jobname}')
         openid = getopenid(usertoken)
-
-        type = json.loads(request.body).get('type', '')
+        print(openid)
         print(f'类型:{type}')
 
         try:
-            execute.delay(data, openid, jobname, sequenceId)
+            execute.delay(data, openid, jobname, sequenceId, type)
             return HttpResponse(json.dumps({
                 "status": 200,
             }, cls=DecimalEncoder))
@@ -908,8 +937,10 @@ def getvideoList(request):
             if int(typepost) == 0:
                 videoObjectList = LookVideo.objects.filter(status__lt=9)
             else:
-                videoObjectList = LookVideo.objects.filter(videotype=int(typepost), status__lt=9)
-            paginator = Paginator(videoObjectList, pageSize)  # 进行分页，pageSize为每一页的数量
+                videoObjectList = LookVideo.objects.filter(
+                    videotype=int(typepost), status__lt=9)
+            # 进行分页，pageSize为每一页的数量
+            paginator = Paginator(videoObjectList, pageSize)
             num = paginator.num_pages  # 页数
             try:  # 正常页，没有超过最大页数
                 videos = paginator.page(page)
@@ -962,7 +993,8 @@ def getvideoDetails(request):
         print(videoId)
         commentsList = []
         try:
-            videoComentObList = Comments.objects.filter(videoid=videoId, status__lt=9)  # 获取所需videoId的评论集合
+            videoComentObList = Comments.objects.filter(
+                videoid=videoId, status__lt=9)  # 获取所需videoId的评论集合
             video = LookVideo.objects.get(id=int(videoId))  # 获取这条视频，转化为int类型
 
             for videoComent in videoComentObList:
@@ -1012,7 +1044,8 @@ def submitVideo(request):
             print("上传的文件名字是：" + myfile.name)
 
             videoName = str(uuid.uuid1()) + "." + myfile.name.split('.').pop()
-            destination = open(STATIC_ROOT + "lookvideo/" + videoName, "wb+")  # 打开特定的文件进行二进制的写操作
+            destination = open(STATIC_ROOT + "lookvideo/" +
+                               videoName, "wb+")  # 打开特定的文件进行二进制的写操作
             for chunk in myfile.chunks():  # 分块写入文件
                 destination.write(chunk)
             destination.close()
@@ -1024,7 +1057,8 @@ def submitVideo(request):
             )
             print(STATIC_ROOT + "static/lookvideo/" + videoName)
             job = pose_d.delay(STATIC_ROOT + "lookvideo/" + videoName, obj.id)
-            score = pose_score.delay(STATIC_ROOT + "lookvideo/" + videoName, obj.id)
+            score = pose_score.delay(
+                STATIC_ROOT + "lookvideo/" + videoName, obj.id)
             print(job)
             response = dict()
             response['status'] = 200
@@ -1048,8 +1082,10 @@ def getGaitResult(request):
         try:
             openid = json.loads(request.body).get('openid', None)
             all_num = Pose.objects.filter(assessstatus=1).count()
-            obj = Pose.objects.filter(user_openid=openid, assessstatus=1).order_by('-time').first()
-            lte_num = Pose.objects.filter(score__lte=obj.score, assessstatus=1).count()
+            obj = Pose.objects.filter(
+                user_openid=openid, assessstatus=1).order_by('-time').first()
+            lte_num = Pose.objects.filter(
+                score__lte=obj.score, assessstatus=1).count()
             percent = round(float(lte_num) / float(all_num), 4) * 100
             print(obj.time)
             return HttpResponse(json.dumps({
@@ -1076,8 +1112,10 @@ def getTrainResult(request):
         try:
             openid = json.loads(request.body).get('openid', None)
             all_num = TrainResult.objects.all().count()
-            obj = TrainResult.objects.filter(openid=openid).order_by('-time').first()
-            lte_num = TrainResult.objects.filter(trainscore__lte=obj.trainscore).count()
+            obj = TrainResult.objects.filter(
+                openid=openid).order_by('-time').first()
+            lte_num = TrainResult.objects.filter(
+                trainscore__lte=obj.trainscore).count()
             percent = round(float(lte_num) / float(all_num), 4) * 100
             print(obj.time)
             return HttpResponse(json.dumps({
@@ -1099,13 +1137,14 @@ def getRecoveryResult(request):
     usertoken = request.META.get("HTTP_USERTOKEN")
     flag = check_token(usertoken)
     # flag = True
-
+    print('getRecoveryResult')
     if request.method == 'POST' and flag:
         try:
             openid = json.loads(request.body).get('openid', None)
             all_num = RecoveryRank.objects.all().count()
-            obj = RecoveryRank.objects.filter(openid=openid).order_by('-time').first()
-            print(openid)
+            obj = RecoveryRank.objects.filter(
+                openid=openid).order_by('-time').first()
+            
             lte_num = RecoveryRank.objects.filter(score__lte=obj.score).count()
             percent = round(float(lte_num) / float(all_num), 4) * 100
             print(obj.time)
@@ -1122,6 +1161,169 @@ def getRecoveryResult(request):
         return HttpResponse(json.dumps({
             "status": 1,
         }, cls=DecimalEncoder))
+
+
+def upLoadModel(request):
+
+    #usertoken = request.META.get("HTTP_USERTOKEN")
+    #flag = check_token(usertoken)
+    print(request.body)
+    if request.method == 'POST':
+        try:
+            phone_num    = request.POST.get('phone_num')
+            model_name   = request.POST.get('model_name')
+            validate_acc = request.POST.get('validate_acc')
+            train_time   = request.POST.get('train_time')
+            train_num    = request.POST.get('train_num')
+            validate_num = request.POST.get('validate_num')
+            batch_num    = request.POST.get('batch_num')
+            epochs       = request.POST.get('epochs')
+            mi_events    = request.POST.get('mi_events')
+            
+            weight_file  = request.FILES.get('weight_file')
+            history_file = request.FILES.get('history_file')
+            
+            # weight_file   = request.FILES.get("weight_file", None)
+            # history_file  = request.FILES.get("history_file", None)
+            # items = request.FILES.items()
+            for filename, file in request.FILES.items():
+                if not (weight_file and history_file):
+                    print("没有上传文件")
+                    return HttpResponse(json.dumps({
+                        "status": "没有上传文件",
+                    }, cls=DecimalEncoder) )
+                
+                if filename == "weight_file":
+                    destination_file = open(
+                        STATIC_ROOT + "user_model_weight/" +  phone_num + '-' + file.name, "wb+")  # 打开特定的文件进行二进制的写操作
+                    weight_file = file.name
+                elif filename == 'history_file':
+                    destination_file = open(
+                        STATIC_ROOT + "user_model_history/" + phone_num + '-' + file.name, "wb+")  # 打开特定的文件进行二进制的写操作
+                    history_file = file.name
+                for chunk in file.chunks():  # 分块写入文件
+                    destination_file.write(chunk)
+                destination_file.close()
+                    
+            
+            # print('1181')
+            
+            # if not (weight_file and history_file):
+            #     print("没有上传文件")
+            #     return HttpResponse(json.dumps({
+            #         "status": "没有上传文件",
+            #     }, cls=DecimalEncoder))
+            # print(STATIC_ROOT)    
+            # destination_weight = open(
+            #     STATIC_ROOT + "user_model_weight/" +  weight_file, "wb+")  # 打开特定的文件进行二进制的写操作
+            # print('1187')
+            # destination_history = open(
+            #     STATIC_ROOT + "user_model_history/" + history_file, "wb+")  # 打开特定的文件进行二进制的写操作
+            # print('1189')
+
+            # for chunk in weight_file.chunks():  # 分块写入文件
+            #     destination_weight.write(chunk)
+            # destination_weight.close()
+            # for chunk in history_file.chunks():  # 分块写入文件
+            #     destination_history.write(chunk)
+            # destination_history.close()
+            print('1198')
+            # 将分数存入数据库
+            try:
+                with transaction.atomic():
+                    UpLoadModel.objects.create(
+                        phone_num    = phone_num,
+                        model_name   = model_name,
+                        mi_events    = mi_events,
+                        validate_acc = validate_acc,
+                        train_time   = train_time,
+                        train_num    = train_num,
+                        validate_num = validate_num,
+                        batch_num    = batch_num,
+                        epochs       = epochs,
+                        
+                        weight_file_name    = phone_num + '-' + weight_file,
+                        history_file_name   = phone_num + '-' + history_file
+                    )
+                    print('1211')
+
+                    return HttpResponse(json.dumps({
+                        "status": 200,
+                    }, cls=DecimalEncoder))
+            except Exception as e:
+                
+                print(e)
+                return {"status": 500, "msg": "failed"}
+            print('1217')
+            return JsonResponse(response)
+        except:
+            response = dict()
+            response['status'] = 0
+            return JsonResponse(response)
+    else:
+        context = {'status': 'GET'}
+        return JsonResponse(context)
+
+
+def downLoadWeight(request):
+    
+    if request.method == 'POST':
+        try:
+            phone  = json.loads(request.body).get('phone_num', None)
+            name   = json.loads(request.body).get('model_name', None)
+            requirements   = json.loads(request.body).get('requirement', None)
+            event  = json.loads(request.body).get('mi_events', None)
+            # print(request.body)
+            if requirements == 'best':
+                obj = UpLoadModel.objects.filter(phone_num=phone,model_name=name,mi_events=event).order_by('-validate_acc').values()
+            elif requirements == 'latest':
+                obj = UpLoadModel.objects.filter(phone_num=phone,model_name=name,mi_events=event).order_by('-train_time').values()
+            first_obj = obj.first()
+            print(first_obj)
+            file_name = first_obj['weight_file_name']
+            print(file_name)
+            if obj.count() == 0:
+                return HttpResponse(False)
+            file_path = STATIC_ROOT + "user_model_weight/" + file_name
+            print(file_path)
+            with open(file_path, 'rb') as f:
+                response = HttpResponse(f.read(), content_type="application/octet-stream", charset="utf-8")
+                response['Content-Dispositon'] = "attachment; filename={0}".format(file_name)
+                response["Access-Control-Allow-Origin"] = '*'
+                response["Server"] = '*'
+                response["data"] = first_obj
+                return response
+        except KeyError:
+            return HttpResponse(False)
+
+def downLoadHistory(request):
+    
+    if request.method == 'POST':
+        try:
+            phone  = json.loads(request.body).get('phone_num', None)
+            name   = json.loads(request.body).get('model_name', None)
+            requirements   = json.loads(request.body).get('requirement', None)
+            print(requirements)
+            if requirements == 'best':
+                obj = UpLoadModel.objects.filter(phone_num=phone,model_name=name).order_by('-validate_acc').values()
+            elif requirements == 'latest':
+                obj = UpLoadModel.objects.filter(phone_num=phone,model_name=name).order_by('-train_time').values()
+            first_obj = obj.first()
+            print(first_obj)
+            file_name = first_obj['history_file_name']
+            print(file_name)
+            if obj.count() == 0:
+                return HttpResponse(False)
+            file_path = STATIC_ROOT + "user_model_history/" + file_name
+            with open(file_path, 'rb') as f:
+                response = HttpResponse(f.read(), content_type="application/octet-stream", charset="utf-8")
+                response['Content-Dispositon'] = "attachment; filename={0}".format(file_name)
+                response["Access-Control-Allow-Origin"] = '*'
+                response["Server"] = '*'
+                response["data"] = first_obj
+                return response
+        except KeyError:
+            return HttpResponse(False)
 
 
 def inputTrainResult(request):
@@ -1181,7 +1383,7 @@ def input_game_score(request):
     r = redis.Redis(host='localhost', port=6379)
     status = r.get(phone_num)
     print(status)
-    #没有绑定手机号的时候传入的手机号变量设定为1
+    # 没有绑定手机号的时候传入的手机号变量设定为1
     if not status and phone_num != "1":
         return {"status": 401, "msg": "用户未登录"}
 
@@ -1216,7 +1418,8 @@ def get_game_score(request):
     rank_list = []
     try:
         # 获取当前手机号的最高分记录
-        cur_game_score = GameScore.objects.filter(phone=phone_num).order_by('-score').first()
+        cur_game_score = GameScore.objects.filter(
+            phone=phone_num).order_by('-score').first()
 
         # 如果当前手机号没有记录，则设置默认值
         if cur_game_score is None:
@@ -1234,10 +1437,12 @@ def get_game_score(request):
         )
 
         # 获取每一个phone的最高分，根据最高分排序，取前10个
-        top_scores = GameScore.objects.values('phone').annotate(max_score=Max('score')).order_by('-max_score')[:10]
+        top_scores = GameScore.objects.values('phone').annotate(
+            max_score=Max('score')).order_by('-max_score')[:10]
         # 根据最高分获取对应的phone、score、time
         for score in top_scores:
-            game_score = GameScore.objects.filter(phone=score['phone'], score=score['max_score']).first()
+            game_score = GameScore.objects.filter(
+                phone=score['phone'], score=score['max_score']).first()
             rank_list.append({
                 "name": game_score.get_name(),
                 "phone": game_score.phone,
@@ -1272,7 +1477,8 @@ def get_gait_rank(request):
             openid = json.loads(request.body).get('openid', None)
 
             # 最近前10条的评估记录
-            recent_poses = Pose.objects.filter(user_openid=openid, assessstatus=1).order_by('-time')[0:10]
+            recent_poses = Pose.objects.filter(
+                user_openid=openid, assessstatus=1).order_by('-time')[0:10]
 
             # 评估记录
             pose_list = []
@@ -1311,7 +1517,8 @@ def get_recovery_rank(request):
             openid = json.loads(request.body).get('openid', None)
 
             # 获取当前用户的最高分评估记录
-            top_recovery = RecoveryRank.objects.filter(openid=openid).order_by('-time').first()
+            top_recovery = RecoveryRank.objects.filter(
+                openid=openid).order_by('-time').first()
             # 如果当前用户没有记录，则设置默认值
             if top_recovery is None:
                 cur_score, cur_time = -1, "2023-04-11 23:50:00"
@@ -1319,16 +1526,17 @@ def get_recovery_rank(request):
                 cur_score, cur_time = top_recovery.score, top_recovery.time
             # 获取高于当前用户最高分的记录数量，分数相同比较时间。
             rank = (
-                    RecoveryRank.objects
-                    .filter(Q(score__gt=cur_score) | Q(score=cur_score, time__lt=cur_time))
-                    .values('openid')
-                    .annotate(max_score=Max('score'))
-                    .order_by('-max_score')
-                    .count() + 1
+                RecoveryRank.objects
+                .filter(Q(score__gt=cur_score) | Q(score=cur_score, time__lt=cur_time))
+                .values('openid')
+                .annotate(max_score=Max('score'))
+                .order_by('-max_score')
+                .count() + 1
             )
 
             # 最近一次的评估
-            recent_recovery = RecoveryRank.objects.filter(openid=openid).order_by('-time').first()
+            recent_recovery = RecoveryRank.objects.filter(
+                openid=openid).order_by('-time').first()
 
             # 获取评估分数排名前10的用户信息
             top_recoveries = (
@@ -1348,7 +1556,8 @@ def get_recovery_rank(request):
                 })
 
             # score降序，time升序
-            rank_list = sorted(rank_list, key=lambda x: (-x['score'], x['time']))
+            rank_list = sorted(
+                rank_list, key=lambda x: (-x['score'], x['time']))
             return {
                 "status": 200,
                 'rank': rank,
@@ -1503,9 +1712,9 @@ def getReport(request):
         url = json.loads(request.body).get('video_url', None)
         # url = json.loads(request.body).get('video_url', None)
         print(url)
-        
+
         try:
-            reports = Pose.objects.filter(after_url=url) 
+            reports = Pose.objects.filter(after_url=url)
             print(reports.values()[0].get('pose_report'))
             response = dict()
             response['status'] = 200
@@ -1541,7 +1750,8 @@ def histroyTrainData(request):
                 content['score'] = obj.trainscore
                 data.append(content)
 
-            oobs = TrainResult.objects.filter(openid=openid).order_by('time')[0:7]
+            oobs = TrainResult.objects.filter(
+                openid=openid).order_by('time')[0:7]
             x = []
             y = []
 

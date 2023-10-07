@@ -25,6 +25,11 @@ urlpatterns = [
     path('train/inputTrainResult', views.inputTrainResult),       # 输入训练结果(对外提供接口，需要token验证，算法)
     path('train/getTrainStatus', views.getTrainStatus),           # 得到训练状态(算法)
     path('train/getRecoveryResult', views.getRecoveryResult),     # 得到康复训练结果
+    path('train/upLoadModel', views.upLoadModel),                 # 上传训练完的模型
+    path('train/downLoadWeight', views.downLoadWeight),             # 下载训练完的模型
+    path('train/downLoadWeight', views.downLoadWeight),             # 下载训练完的模型
+    path('train/downLoadHistory', views.downLoadHistory),             # 下载训练完的模型history
+    
 
     path('recovery/getRecoveryRank', views.get_recovery_rank),      # 得到康复结果排名
     path('recovery/inputRecoveryRank', views.inputRecoveryRank),  # 输入康复结果排名(对外提供接口，需要token验证，算法)

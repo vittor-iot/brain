@@ -296,7 +296,8 @@ class TranData(models.Model):
     time = models.CharField(max_length=255, blank=True, null=True)
     sequenceid = models.CharField(db_column='sequenceId', max_length=255, db_collation='armscii8_general_ci',
                                   blank=True, null=True)  # Field name made lowercase.
-
+    jobname = models.CharField(max_length=10, blank=True, null=True)
+    type    = models.CharField(max_length=10, blank=True, null=True)
     class Meta:
         managed = False
         db_table = 'tran_data'
@@ -341,3 +342,40 @@ class GameScore(models.Model):
         if obj is None:
             return ""
         return obj.get_nick_name()
+
+
+class UpLoadModel(models.Model):
+
+    id            = models.BigAutoField(primary_key=True)
+    phone_num     = models.CharField(max_length=20, blank=True, null=True)
+    model_name    = models.CharField(max_length=255, blank=True, null=True)
+    mi_events     = models.CharField(max_length=20, blank=True, null=True)
+    validate_acc  = models.FloatField(blank=True, null=True)
+    train_time    = models.CharField(max_length=255, blank=True, null=True)
+    train_num     = models.IntegerField(blank=True, null=True)
+    validate_num  = models.IntegerField(blank=True, null=True)
+    batch_num     = models.IntegerField(blank=True, null=True)
+    epochs        = models.IntegerField(blank=True, null=True)
+    history_file_name    = models.CharField(max_length=200, blank=True, null=True)
+    weight_file_name    = models.CharField(max_length=200, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'user_model'
+
+# class DownLoadModel(models.Model):
+
+#     id            = models.BigAutoField(primary_key=True)
+    
+    
+
+#     obj = Userinfo.objects.filter(phone=self.phone).first()
+#     if obj is None:
+#         return ""
+#     return obj.get_nick_name()
+
+#     class Meta:
+#         managed = False
+#         db_table = 'user_model'
+
+    
