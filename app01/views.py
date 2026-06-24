@@ -864,7 +864,10 @@ def qr_bind(request):
             else:
                 data["qrContent"] = "OK"
                 # redis保存登录用户信息，24小时时限
-                r = redis.Redis(host='localhost', port=6379)
+                r = redis.Redis(
+                    host=os.environ.get('REDIS_HOST', 'localhost'),
+                    port=int(os.environ.get('REDIS_PORT', 6379)),
+                )
                 r.setex(phone, 24 * 60 * 60, obj_userinfo.openid)
             # if obj_userinfo.openid != 'NULL':
             #     phone = obj_userinfo.ipname
@@ -1380,7 +1383,10 @@ def input_game_score(request):
         return {"status": 0, "msg": "参数缺失"}
 
     # 判断登录状态
-    r = redis.Redis(host='localhost', port=6379)
+    r = redis.Redis(
+        host=os.environ.get('REDIS_HOST', 'localhost'),
+        port=int(os.environ.get('REDIS_PORT', 6379)),
+    )
     status = r.get(phone_num)
     print(status)
     # 没有绑定手机号的时候传入的手机号变量设定为1
@@ -1408,7 +1414,10 @@ def get_game_score(request):
         return {"status": 0, "msg": "参数缺失"}
 
     # 判断登录状态
-    r = redis.Redis(host='localhost', port=6379)
+    r = redis.Redis(
+        host=os.environ.get('REDIS_HOST', 'localhost'),
+        port=int(os.environ.get('REDIS_PORT', 6379)),
+    )
     status = r.get(phone_num)
     r.close()
     if not status:

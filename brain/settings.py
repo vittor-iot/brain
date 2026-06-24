@@ -81,12 +81,12 @@ ASGI_APPLICATION = 'brain.asgi.application'
 DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'brain',
+        'NAME': os.environ.get('MYSQL_DATABASE', 'brain'),
         # 'HOST': '47.98.219.100',
-        'HOST': 'localhost',
+        'HOST': os.environ.get('MYSQL_HOST', 'localhost'),
         'PORT': 3306,
-        'USER': 'brain',
-        'PASSWORD': '53510678',
+        'USER': os.environ.get('MYSQL_USER', 'brain'),
+        'PASSWORD': os.environ.get('MYSQL_PASSWORD', '53510678'),
         'OPTIONS':{'charset':'utf8mb4'},
     }
 }
@@ -109,10 +109,13 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+REDIS_HOST = os.environ.get('REDIS_HOST', '127.0.0.1')
+REDIS_PORT = os.environ.get('REDIS_PORT', '6379')
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": "redis://{}:{}/1".format(REDIS_HOST, REDIS_PORT),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
@@ -172,4 +175,3 @@ WEBSOCKET_CLIENTS = {}
 
 # django 3.2 之后需要设置
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-

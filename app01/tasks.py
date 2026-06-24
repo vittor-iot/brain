@@ -4,6 +4,7 @@ import time
 import pymysql
 import uuid
 import subprocess
+import imageio_ffmpeg
 from brain.settings import *
 import csv
 import cv2
@@ -20,28 +21,38 @@ mp_pose = mp.solutions.pose
 # For static images:
 
 # Forforin webcam input:
-def avi_to_web_mp4(input_file_path):
-    '''
-    ffmpeg -i test_result.avi -vcodec h264 test_result.mp4
-    @param: [in] input_file_path 带avi或mp4的非H264编码的视频的全路径
-    @return: [output] output_file_path 生成的H264编码视频的全路径
-    '''
-    output_file_path = input_file_path[:-3] + 'mp4'
-    cmd = 'ffmpeg -y -i {} -vcodec h264 {}'.format(input_file_path, output_file_path)
-    subprocess.call(cmd, shell=True)
+def transcode_to_web_mp4(input_file_path, output_file_path=None):
+    root, _ = os.path.splitext(input_file_path)
+    output_file_path = output_file_path or (root + '.mp4')
+    ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+    tmp_output = output_file_path + '.tmp.mp4'
+    cmd = [
+        ffmpeg, '-y', '-i', input_file_path,
+        '-an', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23',
+        '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+        tmp_output,
+    ]
+    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    if result.returncode != 0:
+        raise RuntimeError('ffmpeg mp4 transcode failed: {}'.format(result.stderr[-1000:]))
+    os.replace(tmp_output, output_file_path)
     return output_file_path
+
+
+def video_to_web_mp4(input_file_path):
+    root, ext = os.path.splitext(input_file_path)
+    output_file_path = root + '.mp4'
+    if ext.lower() == '.mp4':
+        output_file_path = root + '.web.mp4'
+    return transcode_to_web_mp4(input_file_path, output_file_path)
+
+
+def avi_to_web_mp4(input_file_path):
+    return video_to_web_mp4(input_file_path)
 
 
 def mp4_to_flv(input_file_path):
-    '''
-    ffmpeg -i test_result.avi -vcodec h264 test_result.mp4
-    @param: [in] input_file_path 带avi或mp4的非H264编码的视频的全路径
-    @return: [output] output_file_path 生成的H264编码视频的全路径
-    '''
-    output_file_path = input_file_path[:-3] + 'flv'
-    cmd = 'ffmpeg -y -i {} -vcodec h264 {}'.format(input_file_path, output_file_path)
-    subprocess.call(cmd, shell=True)
-    return output_file_path
+    return video_to_web_mp4(input_file_path)
 
 
 '''
@@ -51,9 +62,24 @@ celery -A celery_task worker -P eventlet --loglevel=INFO --concurrency=10
 '''
 
 
+def get_db_config():
+    db_settings = DATABASES.get('default', {})
+    return {
+        'host': os.environ.get('MYSQL_HOST', db_settings.get('HOST', 'localhost')),
+        'user': os.environ.get('MYSQL_USER', db_settings.get('USER', 'brain')),
+        'password': os.environ.get('MYSQL_PASSWORD', db_settings.get('PASSWORD', '53510678')),
+        'database': os.environ.get('MYSQL_DATABASE', db_settings.get('NAME', 'brain')),
+        'port': int(os.environ.get('MYSQL_PORT', db_settings.get('PORT', 3306))),
+        'charset': 'utf8mb4',
+    }
+
+
 def get_db():
-    db = pymysql.connect(host="localhost", user="brain", password="53510678", database="brain", charset="utf8mb4")
-    return db
+    return pymysql.connect(**get_db_config())
+
+
+def get_connect():
+    return Connect(**get_db_config())
 
 
 @shared_task
@@ -89,14 +115,19 @@ def execute(data, openid, jobname, sequenceId, type):
 def pose_d(path, id):
     print('begin-1')
     cap = cv2.VideoCapture(path)
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')  # 视频编解码器
-    fps = cap.get(cv2.CAP_PROP_FPS)  # 帧数
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # 视频编解码器
+    fps = cap.get(cv2.CAP_PROP_FPS) or 25  # 帧数
     width, height = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))  # 宽高
     name = str(uuid.uuid1())
-    after_path = STATIC_ROOT + 'posevideo/' + name + '.avi'
+    raw_after_path = STATIC_ROOT + 'posevideo/' + name + '.raw.mp4'
+    after_path = STATIC_ROOT + 'posevideo/' + name + '.mp4'
     csv_name = STATIC_ROOT + 'posecsv/' + name + '.csv'
     print(csv_name)
-    out = cv2.VideoWriter(after_path, fourcc, fps, (width, height))  # 写入视频
+    out = cv2.VideoWriter(raw_after_path, fourcc, fps, (width, height))  # 写入临时视频
+    if not cap.isOpened() or not out.isOpened():
+        cap.release()
+        out.release()
+        raise RuntimeError('Cannot open input or output video for pose task')
     hh = [
         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
          31, 32, 33]]
@@ -156,9 +187,12 @@ def pose_d(path, id):
     cap.release()
     out.release()
     cv2.destroyAllWindows()
-    oo = avi_to_web_mp4(after_path)
-    cc = mp4_to_flv(oo)
-    b = cc.split(STATIC_ROOT)[1]
+    transcode_to_web_mp4(raw_after_path, after_path)
+    try:
+        os.remove(raw_after_path)
+    except OSError:
+        pass
+    b = after_path.split(STATIC_ROOT)[1]
     new_path = STATIC_IP + 'static/' + b
     new_csv = STATIC_IP + 'static/posecsv/' + name + '.csv'
 
@@ -174,11 +208,10 @@ def pose_d(path, id):
     #     db.rollback()
     # finally:
     #     db.close()
-    con = Connect(host="localhost", user="brain", password="53510678", database="brain")
-    con.table_update('pose', {'after_url': new_path, 'csv_url': new_csv, 'assessStatus': 0}, 'id', id)
+    con = get_connect()
+    con.table_update('pose', {'after_url': new_path, 'csv_url': new_csv, 'assessStatus': 1}, 'id', id)
     con.close()
 
-    os.remove(after_path)
     print('视频转换完成')
 
 
@@ -225,7 +258,7 @@ def backendtoflv_pose(path, id):
 @shared_task
 def pose_score(path, id):
     score = get_score_by_video_path(path)
-    con = Connect(host="localhost", user="brain", password="53510678", database="brain")
+    con = get_connect()
     con.table_update('pose', {'score': score}, 'id', id)
     con.close()
 

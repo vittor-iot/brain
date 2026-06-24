@@ -179,8 +179,7 @@ def deleteVideo(request):
             response['status'] = 0
             return JsonResponse(response)
     else:
-        
-        return HttpResponse('Error!')
+        return JsonResponse({'status': 401, 'message': 'invalid token'})
 
 
 # 接收上传的视频
@@ -227,8 +226,7 @@ def uploadVideo(request):
             response['status'] = 0
             return JsonResponse(response)
     else:
-        
-        return HttpResponse('Error!')
+        return JsonResponse({'status': 401, 'message': 'invalid token'})
 
 # 接收上传视频的封面
 # 接收 file、id
@@ -270,8 +268,7 @@ def uploadLogo(request):
             response['status'] = 0
             return JsonResponse(response)
     else:
-        
-        return HttpResponse('Error!')
+        return JsonResponse({'status': 401, 'message': 'invalid token'})
 
 
 # 查询评论列表
@@ -406,8 +403,7 @@ def queryReportList(request):
             response['status'] = 0
             return JsonResponse(response)
     else:
-        
-        return HttpResponse('Error!')
+        return JsonResponse({'status': 401, 'message': 'invalid token'})
 
 
 # 查询报告详情
@@ -434,8 +430,7 @@ def queryReportDetails(request):
             response['status'] = 0
             return JsonResponse(response)
     else:
-        
-        return HttpResponse('Error!')
+        return JsonResponse({'status': 401, 'message': 'invalid token'})
 
 
 # 上传步态评估报告
@@ -510,8 +505,7 @@ def changeAssess(request):
             response['status'] = 0
             return JsonResponse(response)
     else:
-        
-        return HttpResponse('Error!')
+        return JsonResponse({'status': 401, 'message': 'invalid token'})
 
 
 
@@ -922,5 +916,3 @@ def changePwd(request):
     else:
         
         return HttpResponse('Error!')
-
-
